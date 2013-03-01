@@ -75,13 +75,14 @@ static void __glDeleteBuffersINT(GL_GEN_BUFFERS_FUNC real_func, GLsizei n, GLuin
 
 	__gldbg_printf("glDeleteBuffers()\n");
 
-	real_func(n, buffers);
-
 	struct __gl_buffer_t * buffer;
 	for(int i = 0; i < n; ++i) {
 		buffer = __find_buffer(buffers[i]);
 		if(buffer != NULL) buffer->valid = 0;
 	}
+
+	real_func(n, buffers);
+
 }
 
 static void __glBindBufferINT(GL_BIND_BUFFER_FUNC real_func, GLenum target, GLuint buffer) {
@@ -151,16 +152,18 @@ static void __alloc_buffers(GLsizei n, GLuint * buffers) {
 	for(int i = 0; i< n; ++i) {
 		max_id = buffers[i] > max_id ? buffers[i] : max_id;
 	}
+	++max_id;
 
 	if(__buffers_jumplist == NULL) {
-		__buffers_jumplist = (struct __gl_buffer_t**) calloc( sizeof(struct __gl_buffer_t*), (max_id + 1) );
+		__buffers_jumplist = (struct __gl_buffer_t**) calloc( sizeof(struct __gl_buffer_t*), max_id );
+
 	} else if(max_id >= __buffers_jumplist_size) {
-		__buffers_jumplist = (struct __gl_buffer_t**) realloc( (void*)__buffers_jumplist, sizeof(struct __gl_buffer_t*) * (max_id + 1) );
-		for(unsigned int i=__buffers_jumplist_size; i < ( max_id + 1) ; ++i) {
+		__buffers_jumplist = (struct __gl_buffer_t**) realloc( (void*)__buffers_jumplist, sizeof(struct __gl_buffer_t*) * max_id );
+		for(unsigned int i=__buffers_jumplist_size; i < max_id ; ++i) {
 			__buffers_jumplist[i] = NULL;
 		}
 	}
-	__buffers_jumplist_size = max_id + 1;
+	__buffers_jumplist_size = max_id;
 
 	for(unsigned int i = 0; i< n; ++i) {
 		__buffers[first_id + i].name = buffers[i];
