@@ -19,19 +19,26 @@ AC_DEFUN([AX_GLEW], [
 	esac
 	
 	AS_IF([test "x${ax_glew_want}" == "xyes"], [
-			AC_CHECK_HEADER([GL/glew.h],[
-					ax_glew_cflags=
-					
-					AS_IF([test "x$ax_glew_path" != "x"], [
-									ax_glew_cflags="-I$ax_glew_path/include"
-					])
-					
-					AC_SUBST(GLEW_CFLAGS, [$ax_glew_cflags])
-					AC_DEFINE([HAVE_GLEW], 1, [Define to 1 if you have assimp])
-					], [
-					AC_MSG_ERROR([Make sure GLEW is installed.])
-					])
-			]) dnl if ${ax_glew_want}
+					AC_CHECK_HEADER([GL/glew.h],[
+									AC_CHECK_LIB([GLEW], [glewInit], [
+													ax_glew_cflags=
+													ax_glew_libs=-lGLEW
+													
+													AS_IF([test "x$ax_glew_path" != "x"], [
+																	ax_glew_cflags="-I$ax_glew_path/include"
+																	ax_glew_libs="-L$ax_glew_path/lib $ax_glew_libs"
+													])
+													
+													AC_SUBST(GLEW_CFLAGS, [$ax_glew_cflags])
+													AC_SUBST(GLEW_LIBS, [$ax_glew_libs])
+													AC_DEFINE([HAVE_GLEW], 1, [Define to 1 if you have assimp])
+													], [
+													AC_MSG_ERROR([Make sure GLEW is installed.])
+													])
+									], [
+													AC_MSG_ERROR([Make sure GLEW is installed.])
+									])
+					]) dnl if ${ax_glew_want}
 	
 	CPPFLAGS="$saved_CPPFLAGS"
 	LDFLAGS="$saved_LDFLAGS"

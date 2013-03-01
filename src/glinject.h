@@ -17,10 +17,10 @@ extern struct __gl_func_t __functions[];
 
 /* Defined functions */
 enum {
-	GLDBG_GL_BIND_BUFFER = 0,
+	GLDBG_GL_GEN_BUFFERS = 0,
+	GLDBG_GL_DELETE_BUFFERS,
+	GLDBG_GL_BIND_BUFFER,
 };
-
-typedef void (*GL_BIND_BUFFER_FUNC) (GLenum, GLuint);
 
 
 #endif

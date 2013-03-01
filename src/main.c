@@ -7,8 +7,6 @@ static void __collect_data();
 EXPORT void SDL_GL_SwapBuffers() {
 		__gldbg_init();
 
-		__gldbg_printf("SwapBuffers()\n");
-
 		__debug();
 
 		__real_SDL_GL_SwapBuffers();
@@ -19,7 +17,7 @@ EXPORT void SDL_Quit() {
 
 		__gldbg_printf("Quit()\n");
 
-		//__free_buffers();
+		__free_buffers();
 
 		__real_SDL_Quit();
 }

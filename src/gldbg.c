@@ -55,7 +55,26 @@ void __gldbg_printf(const char* fmt, ...) {
 
 		free(message);
 	} else {
-		vfprintf(stderr, fmt, ap);
+		fprintf(stderr, "[GLDBG] Memory allocation failed\n");
+		abort();
+	}
+
+	va_end(ap);
+}
+
+void __gldbg_log(const char* fmt, ...) {
+	va_list ap;
+	va_start(ap, fmt);
+
+	char* message = NULL;
+	if(vasprintf(&message, fmt, ap) != -1) {
+		fprintf(stderr, "[GLDBG LOG] %s", message);
+		//TODO: Write to log
+
+		free(message);
+	} else {
+		fprintf(stderr, "[GLDBG] Memory allocation failed\n");
+		abort();
 	}
 
 	va_end(ap);

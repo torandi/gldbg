@@ -18,15 +18,23 @@ struct __gl_buffer_t {
 	GLint size;
 	struct __buffer_type_t type;
 	unsigned char valid;
-	char * str;
 };
 
 extern struct __gl_buffer_t * __buffers;
-
 extern unsigned int __num_buffers;
-extern unsigned int __allocated_buffers;
+
+struct __gl_buffer_t * __find_buffer(GLuint name);
 
 void __free_buffers();
+
+typedef void (*GL_GEN_BUFFERS_FUNC) (GLsizei, GLuint*);
+typedef void (*GL_BIND_BUFFER_FUNC) (GLenum, GLuint);
+
+EXPORT void __glGenBuffers(GLsizei n, GLuint * buffers);
+EXPORT void __glGenBuffersARB(GLsizei n, GLuint * buffers);
+
+EXPORT void __glDeleteBuffers(GLsizei n, GLuint * buffers);
+EXPORT void __glDeleteBuffersARB(GLsizei n, GLuint * buffers);
 
 EXPORT void __glBindBuffer(GLenum target, GLuint buffer);
 EXPORT void __glBindBufferARB(GLenum target, GLuint buffer);

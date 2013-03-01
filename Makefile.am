@@ -1,7 +1,8 @@
 ACLOCAL_AMFLAGS = -I m4
 AM_DEFAULT_SOURCE_EXT = .cpp
 
-# AM_LDFLAGS = 
+
+AM_LDFLAGS = ${GLEW_LDFLAGS} ${GL_LDFLAGS}
 AM_CFLAGS = -std=gnu99 -Wall -Wvla -Wconversion -I${top_srcdir}/src -fvisibility=hidden ${GL_CFLAGS} ${GLEW_CFLAGS}
 
 lib_LTLIBRARIES = libgldbg.la

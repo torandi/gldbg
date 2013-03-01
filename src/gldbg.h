@@ -17,5 +17,6 @@ extern GL_X_GET_PROC_ADDRESS_FUNC __real_glXGetProcAddress;
 void __gldbg_init();
 
 void __attribute__((format(printf, 1,2))) __gldbg_printf(const char* fmt, ...);
+void __attribute__((format(printf, 1,2))) __gldbg_log(const char* fmt, ...);
 
 #endif
