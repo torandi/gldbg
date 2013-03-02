@@ -227,9 +227,9 @@ const char * __config(const char * key) {
 
 static void __load_defaults() {
 	struct __config_entry_t config[] = {
-		{ "keyboard:print_buffers", "ctrl shift t" },
+		{ "keyboard:print_buffers", "ctrl t" },
 		{ "buffers:defaults", "float4 both" },
-		{ "buffers:log_interval", "20" },
+		{ "buffers:log_interval", "300" },
 		{ "buffers:print_interval", "keydown" },
 	};
 
