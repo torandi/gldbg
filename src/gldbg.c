@@ -17,10 +17,13 @@ static int __initialized = 0;
 
 static FILE * __log = NULL;
 
+extern void __init_debug();
+
 void __gldbg_init() {
 	if(__initialized) return;
 
 	__log = fopen(LOG_FILE, "w");
+
 	if(__log == NULL) __gldbg_printf("Failed to open logfile %s\n", LOG_FILE);
 
 	/* load real functions */
@@ -50,6 +53,7 @@ void __gldbg_init() {
 	}
 
 	__load_config();
+	__init_debug();
 
 	__initialized = 1;
 }

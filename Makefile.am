@@ -12,6 +12,7 @@ libgldbg_la_SOURCES = \
 	src/glinject.c \
 	src/buffers.c \
 	src/config.c \
+	src/keyboard.c \
 	src/gldbg.c
 
 .PHONY: convenience-link clean-convenience-link
