@@ -20,7 +20,7 @@ struct __gl_buffer_t {
 	unsigned char valid;
 };
 
-extern struct __gl_buffer_t * __buffers;
+extern struct __gl_buffer_t ** __buffers;
 extern unsigned int __num_buffers;
 
 struct __gl_buffer_t * __find_buffer(GLuint name);
