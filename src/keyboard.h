@@ -5,13 +5,14 @@
 
 struct __keyconf_t {
 	SDLKey keys[5]; /* No more than five keys per key combination */
+	int down;
 };
 
 void __update_keyboard();
 
 struct __keyconf_t __parse_keyconf(const char * conf);
 
-int __keyconf_pressed(const struct __keyconf_t * conf);
+int __keyconf_pressed(struct __keyconf_t * conf);
 
 
 

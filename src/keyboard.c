@@ -14,7 +14,11 @@ void __update_keyboard() {
 }
 
 struct __keyconf_t __parse_keyconf(const char * conf) {
-	struct __keyconf_t config = { .keys = { SDLK_UNKNOWN, } };
+	struct __keyconf_t config = { 
+		.keys = { SDLK_UNKNOWN, },
+		.down = 0,
+	};
+
 	char key[16];
 	int key_len = 0;
 	int index = 0;
@@ -59,9 +63,14 @@ struct __keyconf_t __parse_keyconf(const char * conf) {
 	return config;
 }
 
-int __keyconf_pressed(const struct __keyconf_t * conf) {
+int __keyconf_pressed(struct __keyconf_t * conf) {
 	for(int i=0; i<5; ++i) {
-		if(conf->keys[i] != SDLK_UNKNOWN && __keystate[conf->keys[i]] == 0) return 0;
+		if(conf->keys[i] != SDLK_UNKNOWN && __keystate[conf->keys[i]] == 0) {
+			conf->down = 0;
+			return 0;
+		}
 	}
-	return 1;
+	int ret = conf->down;
+	conf->down = 1;
+	return !ret;
 }

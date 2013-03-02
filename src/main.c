@@ -50,8 +50,7 @@ static void __debug() {
 	if(__print_interval == INTERVAL_KEYDOWN || __log_interval == INTERVAL_KEYDOWN) {
 		__update_keyboard();
 		if(__keyconf_pressed(&__buffer_keyconf)) {
-	//		__log_buffers( (__print_interval == INTERVAL_KEYDOWN) * OUT_PRINT | (__log_interval == INTERVAL_KEYDOWN) * OUT_LOG );
-			__gldbg_printf("Keys down\n");
+			__log_buffers( (__print_interval == INTERVAL_KEYDOWN) * OUT_PRINT | (__log_interval == INTERVAL_KEYDOWN) * OUT_LOG );
 		}
 	}
 }
