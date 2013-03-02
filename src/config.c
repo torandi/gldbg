@@ -30,6 +30,8 @@ static char * __find_entry(const char * key);
 
 static void __load_defaults();
 
+static void __write_config();
+
 void __load_config() {
 	__load_defaults();
 	FILE * f = fopen(CONFIG_FILE, "r");
@@ -86,12 +88,44 @@ void __load_config() {
 			}
 		}
 		fclose(f);
+	} else {
+		__write_config();
 	}
 
 	__default_buffer_type = __parse_buffer_type(__find_entry("buffers:defaults"));
 }
 
-void __write_config() {
+static void __write_config() {
+	FILE * f = fopen(CONFIG_FILE, "w");
+	if(f != NULL ) {
+		char * section = NULL;
+		int current_section_len = 0;
+		int section_len = 0;
+		char * key = NULL;
+
+		for(int i=0; i<__config_entries; ++i) {
+			key = strstr(__config_table[i].key, ":");
+			if(key == NULL) {
+				__gldbg_printf("Invalid key %s\n", __config_table[i].key);
+			} else {
+				section_len = (int)(key - __config_table[i].key);
+				++key;
+				if(section == NULL || current_section_len != section_len || strncmp(section, __config_table[i].key, (size_t)section_len) != 0) {
+					current_section_len = section_len;
+					section = __config_table[i].key;
+					fprintf(f, "[%.*s]\n", section_len, section);
+				}
+				fprintf(f, "\t%s = %s\n", key, __config_table[i].value);
+			}
+		}
+		fclose(f);
+		__gldbg_printf("Wrote config to %s\n", CONFIG_FILE);
+	} else {
+		__gldbg_printf("Failed to open %s for writing\n", CONFIG_FILE);
+	}
+}
+
+void __write_buffer_config() {
 
 }
 

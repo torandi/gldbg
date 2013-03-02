@@ -4,8 +4,8 @@
 #include "buffers.h"
 
 void __load_config();
-void __write_config();
 void __free_config();
+void __write_buffer_config();
 
 /* Fetches the config data for the given key */
 const char * __config(const char * key);

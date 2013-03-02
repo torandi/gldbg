@@ -48,7 +48,7 @@ void __gldbg_init() {
 }
 
 void __gldbg_finish() {
-	__write_config();
+	__write_buffer_config();
 	__free_buffers();
 	__free_config();
 }
