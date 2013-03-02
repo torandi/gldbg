@@ -27,4 +27,12 @@ EXPORT void __glBindBufferARB(GLenum target, GLuint buffer) {
 	__glBindBufferINT(__functions[GLDBG_GL_BIND_BUFFER].real_func_arb,target, buffer);
 }
 
+EXPORT void __glBufferData(GLenum target, GLsizeiptr size, const GLvoid * data, GLenum usage) {
+	__glBufferDataINT(__functions[GLDBG_GL_BUFFER_DATA].real_func, target, size, data, usage);
+}
+
+EXPORT void __glBufferDataARB(GLenum target, GLsizeiptr size, const GLvoid * data, GLenum usage) {
+	__glBufferDataINT(__functions[GLDBG_GL_BUFFER_DATA].real_func_arb, target, size, data, usage);
+}
+
 #endif

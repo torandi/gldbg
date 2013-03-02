@@ -29,6 +29,7 @@ void __free_buffers();
 
 typedef void (*GL_GEN_BUFFERS_FUNC) (GLsizei, GLuint*);
 typedef void (*GL_BIND_BUFFER_FUNC) (GLenum, GLuint);
+typedef void (*GL_BUFFER_DATA_FUNC) (GLenum, GLsizeiptr, const GLvoid *, GLenum);
 
 EXPORT void __glGenBuffers(GLsizei n, GLuint * buffers);
 EXPORT void __glGenBuffersARB(GLsizei n, GLuint * buffers);
@@ -38,5 +39,8 @@ EXPORT void __glDeleteBuffersARB(GLsizei n, GLuint * buffers);
 
 EXPORT void __glBindBuffer(GLenum target, GLuint buffer);
 EXPORT void __glBindBufferARB(GLenum target, GLuint buffer);
+
+EXPORT void __glBufferData(GLenum target, GLsizeiptr size, const GLvoid * data, GLenum usage);
+EXPORT void __glBufferDataARB(GLenum target, GLsizeiptr size, const GLvoid * data, GLenum usage);
 
 #endif

@@ -8,6 +8,7 @@ struct __gl_func_t __functions[] = {
 	{ "glGenBuffers", (void*)__glGenBuffers , (void*)__glGenBuffersARB, NULL, NULL },
 	{ "glDeleteBuffers", (void*)__glDeleteBuffers , (void*)__glDeleteBuffersARB, NULL, NULL },
 	{ "glBindBuffer", (void*)__glBindBuffer , (void*)__glBindBufferARB, NULL, NULL },
+	{ "glBufferData", (void*)__glBufferData , (void*)__glBufferDataARB, NULL, NULL },
 };
 
 

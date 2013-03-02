@@ -12,6 +12,7 @@
 static void __glGenBuffersINT(GL_GEN_BUFFERS_FUNC real_func, GLsizei n, GLuint * buffers);
 static void __glDeleteBuffersINT(GL_GEN_BUFFERS_FUNC real_func, GLsizei n, GLuint * buffers);
 static void __glBindBufferINT(GL_BIND_BUFFER_FUNC real_func, GLenum target, GLuint buffer);
+static void __glBufferDataINT(GL_BUFFER_DATA_FUNC real_func, GLenum target, GLsizeiptr size, const GLvoid * data, GLenum usage);
 
 #include "buffers.func.h"
 
@@ -43,11 +44,11 @@ static GLenum __target_get_enums[] = {
 static const char * __target_names[] = {
 	"GL_ARRAY_BUFFER",
 	"GL_ATOMIC_COUNTER_BUFFER",
-	"GL_COPY_READ_BUFFER",
-	"GL_COPY_WRITE_BUFFER",
 	"GL_ELEMENT_ARRAY_BUFFER",
 	"GL_TRANSFORM_FEEDBACK_BUFFER",
 	"GL_UNIFORM_BUFFER",
+	"GL_COPY_READ_BUFFER",
+	"GL_COPY_WRITE_BUFFER",
 	"GL_DRAW_INDIRECT_BUFFER",
 	"GL_PIXEL_PACK_BUFFER",
 	"GL_PIXEL_UNPACK_BUFFER",
@@ -56,16 +57,12 @@ static const char * __target_names[] = {
 };
 
 static void __glGenBuffersINT(GL_GEN_BUFFERS_FUNC real_func, GLsizei n, GLuint * buffers) {
-	__gldbg_printf("glGenBuffers()\n");
-
 	real_func(n, buffers);
 
 	__alloc_buffers(n, buffers);
 }
 
 static void __glDeleteBuffersINT(GL_GEN_BUFFERS_FUNC real_func, GLsizei n, GLuint * buffers) {
-	__gldbg_printf("glDeleteBuffers()\n");
-
 	struct __gl_buffer_t * buffer;
 	for(int i = 0; i < n; ++i) {
 		buffer = __find_buffer(buffers[i]);
@@ -104,7 +101,33 @@ static void __glBindBufferINT(GL_BIND_BUFFER_FUNC real_func, GLenum target, GLui
 	}
 }
 
-//		glGetBufferParameteriv(target, GL_BUFFER_SIZE, &(buffer->size));
+static void __glBufferDataINT(GL_BUFFER_DATA_FUNC real_func, GLenum target, GLsizeiptr size, const GLvoid * data, GLenum usage) {
+	real_func(target, size, data, usage);
+
+	GLint buffer_index = __bound_buffer(target);
+
+	if(buffer_index == 0) {
+		__gldbg_printf("Warning! Buffering data to target %s with buffer 0 bound!\n", __target_names[__target_index(target)]);
+		return;
+	}
+
+	if(buffer_index == -1) {
+		__gldbg_printf("Derp teh herp, not nadling %s\n", __target_names[__target_index(target)]);
+		return; /* We don't handle this buffer type */
+	}
+
+	struct __gl_buffer_t * buffer = __find_buffer((GLuint)buffer_index);
+
+	if(buffer == NULL) {
+		__gldbg_printf("Internal error! No internal data found for buffer %u bound to target %s\n", buffer_index, __target_names[__target_index(target)]);
+		abort();
+		return;
+	}
+
+	glGetBufferParameteriv(target, GL_BUFFER_SIZE, &(buffer->size));
+	__gldbg_printf("Size for buffer %u (%s) set to %d\n", buffer_index, __target_names[__target_index(target)], buffer->size);
+
+}
 
 void __free_buffers() {
 	for(unsigned int i = 0; i < __num_buffers; ++i) {
@@ -136,19 +159,20 @@ static void __alloc_buffers(GLsizei n, GLuint * buffers) {
 	__num_buffers = max_id;
 
 	for(unsigned int i = 0; i< n; ++i) {
+		GLuint index = buffers[i];
 		struct __gl_buffer_t buffer = {
-			.name = buffers[i],
+			.name = index,
 			.target = 0,
 			.size = 0,
 			.type = { GLDBG_BUFFER_FLOAT, 1 },
 			.valid = 1,
 		};
 
-		__buffers[i] = (struct __gl_buffer_t*) malloc(sizeof(struct __gl_buffer_t));
+		__buffers[index] = (struct __gl_buffer_t*) malloc(sizeof(struct __gl_buffer_t));
 
-		memcpy(__buffers[i], &buffer, sizeof(struct __gl_buffer_t));
+		memcpy(__buffers[index], &buffer, sizeof(struct __gl_buffer_t));
 
-		__gldbg_printf("Generated buffer %u\n", buffers[i]);
+		__gldbg_printf("Generated buffer: %u\n", index);
 	}
 }
 
@@ -178,11 +202,11 @@ static int __target_index(GLenum target) {
 		switch(target) {
 		case GL_ARRAY_BUFFER: return 0;
 		case GL_ATOMIC_COUNTER_BUFFER: return 1;
-		case GL_COPY_READ_BUFFER: return 2;
-		case GL_COPY_WRITE_BUFFER: return 3;
-		case GL_ELEMENT_ARRAY_BUFFER: return 4;
-		case GL_TRANSFORM_FEEDBACK_BUFFER: return 5;
-		case GL_UNIFORM_BUFFER: return 6;
+		case GL_ELEMENT_ARRAY_BUFFER: return 2;
+		case GL_TRANSFORM_FEEDBACK_BUFFER: return 3;
+		case GL_UNIFORM_BUFFER: return 4;
+		case GL_COPY_READ_BUFFER: return 5;
+		case GL_COPY_WRITE_BUFFER: return 6;
 		case GL_DRAW_INDIRECT_BUFFER: return 7;
 		case GL_PIXEL_PACK_BUFFER: return 8;
 		case GL_PIXEL_UNPACK_BUFFER: return 9;
