@@ -6,15 +6,22 @@
 #include <stdarg.h>
 #include <dlfcn.h>
 
+#define LOG_FILE "gldbg.log"
+
 void (*__real_SDL_GL_SwapBuffers)() = NULL;
 GL_X_GET_PROC_ADDRESS_FUNC __real_glXGetProcAddressARB = NULL;
 GL_X_GET_PROC_ADDRESS_FUNC __real_glXGetProcAddress = NULL;
 void (*__real_SDL_Quit)() = NULL;
 
-static int initialized = 0;
+static int __initialized = 0;
+
+static FILE * __log = NULL;
 
 void __gldbg_init() {
-	if(initialized) return;
+	if(__initialized) return;
+
+	__log = fopen(LOG_FILE, "w");
+	if(__log == NULL) __gldbg_printf("Failed to open logfile %s\n", LOG_FILE);
 
 	/* load real functions */
 
@@ -44,13 +51,15 @@ void __gldbg_init() {
 
 	__load_config();
 
-	initialized = 1;
+	__initialized = 1;
 }
 
 void __gldbg_finish() {
 	__write_buffer_config();
 	__free_buffers();
 	__free_config();
+
+	if(__log != NULL) fclose(__log);
 }
 
 void __gldbg_printf(const char* fmt, ...) {
@@ -70,15 +79,14 @@ void __gldbg_printf(const char* fmt, ...) {
 	va_end(ap);
 }
 
-void __gldbg_log(const char* fmt, ...) {
+void __gldbg_out(enum __output_t output_target, const char* fmt, ...) {
 	va_list ap;
 	va_start(ap, fmt);
 
 	char* message = NULL;
 	if(vasprintf(&message, fmt, ap) != -1) {
-		fprintf(stderr, "[GLDBG LOG] %s", message);
-		//TODO: Write to log
-
+		if(output_target & OUT_PRINT) fprintf(stderr, "%s", message);
+		if(__log != NULL && output_target & OUT_LOG) fprintf(__log, "%s", message);
 		free(message);
 	} else {
 		fprintf(stderr, "[GLDBG] Memory allocation failed\n");

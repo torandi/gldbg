@@ -7,12 +7,10 @@
 
 enum __data_type_t { FLOAT = 1, INT = 2 };
 
-enum __buffer_output_t { OUT_PRINT = 1 , OUT_LOG = 2, OUT_BOTH = 3 };
-
 struct __buffer_type_t {
 	enum __data_type_t data_type;
 	int group_size;
-	enum __buffer_output_t output;
+	enum __output_t output;
 };
 
 struct __gl_buffer_t {
@@ -35,7 +33,7 @@ struct __gl_buffer_t * __find_buffer(GLuint name);
  */
 int __read_buffer(struct __gl_buffer_t * buffer);
 
-void __log_buffer(struct __gl_buffer_t * buffer);
+void __log_buffer(struct __gl_buffer_t * buffer, enum __output_t output_target);
 
 void __free_buffers();
 

@@ -240,8 +240,10 @@ int __read_buffer(struct __gl_buffer_t * buffer) {
 	return 1;
 }
 
-void __log_buffer(struct __gl_buffer_t * buffer) {
-	__gldbg_log("%u (%s):\n", buffer->name, __target_names[__target_index(buffer->target)]);
+void __log_buffer(struct __gl_buffer_t * buffer, enum __output_t output_target) {
+	output_target &= buffer->type.output;
+	if(output_target == 0) return;
+	__gldbg_out(output_target, "%u (%s):\n", buffer->name, __target_names[__target_index(buffer->target)]);
 	int count = 0;
 	GLint size = 0; /* Size of the data type used to interprent the buffer */
 	switch(buffer->type.data_type) {
@@ -256,26 +258,26 @@ void __log_buffer(struct __gl_buffer_t * buffer) {
 	int values = buffer->size / size;
 
 	if(buffer->size % size != 0) {
-		__gldbg_log("Warning! Data type size does not evenly divide buffer size!\n");
+		__gldbg_out(output_target, "Warning! Data type size does not evenly divide buffer size!\n");
 	}
 
 
 	for(int i=0;i < values; ++i) {
 		switch(buffer->type.data_type) {
 			case FLOAT:
-				__gldbg_log("%f\t",  ((float*)buffer->data)[i]);
+				__gldbg_out(output_target, "%f\t",  ((float*)buffer->data)[i]);
 				break;
 			case INT:
-				__gldbg_log("%d\t",  ((int*)buffer->data)[i]);
+				__gldbg_out(output_target, "%d\t",  ((int*)buffer->data)[i]);
 				break;
 		}
 		++count;
-		if(count % buffer->type.group_size == 0) __gldbg_printf("\n");
+		if(count % buffer->type.group_size == 0) __gldbg_out(output_target, "\n");
 	}
 
-	if(count % buffer->type.group_size != 0) __gldbg_printf("\n");
+	if(count % buffer->type.group_size != 0) __gldbg_out(output_target, "\n");
 
-	__gldbg_printf("\n");
+	__gldbg_out(output_target, "\n");
 }
 
 int __target_index(GLenum target) {

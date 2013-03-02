@@ -15,6 +15,11 @@ void __configure_buffer(struct __gl_buffer_t * buffer);
 
 extern struct __buffer_type_t __default_buffer_type;
 
+#define INTERVAL_NEVER -2
+#define INTERVAL_KEYDOWN -1
+
+int __parse_interval(const char * str);
+
 void lowercase(char * str);
 
 #endif

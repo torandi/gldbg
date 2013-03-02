@@ -33,7 +33,7 @@ static void __load_defaults();
 
 static void __write_config();
 
-static struct __buffer_type_t __parse_buffer_config(char * type, char * output);
+static struct __buffer_type_t __parse_buffer_config(const char * type, const char * output);
 static struct __buffer_type_t __parse_buffer_row(const char * value);
 
 /* Data for parsing/writing buffer config */
@@ -51,7 +51,7 @@ static const size_t __num_buffer_config_types = sizeof(__buffer_config_types) / 
 
 struct __buffer_config_output_type_t {
 	const char * str;
-	enum __buffer_output_t type;
+	enum __output_t type;
 };
 
 static const struct __buffer_config_output_type_t __buffer_config_output_types[] = {
@@ -78,7 +78,6 @@ void __load_config() {
 		while(!feof(f)) {
 			if(fscanf(f, " // %s ", buffer) == 1) {
 			} else if(fscanf(f, " [ %[^]] ] ", section_buffer) == 1) {
-				__gldbg_printf("Begin section %s\n", section_buffer);
 				sprintf(key_buffer, "%s:", section_buffer);
 				key_start = key_buffer + strlen(section_buffer) + 1;
 			} else if(key_start != NULL && fscanf(f, " %[^=] = ", key_start) == 1) {
@@ -102,7 +101,8 @@ void __load_config() {
 						}
 					}
 
-					__gldbg_printf("'%s' = '%s'\n", key_buffer, value_buffer);
+					lowercase(key_buffer);
+					lowercase(value_buffer);
 
 					char * entry = __find_entry(key_buffer);
 					if(entry != NULL) {
@@ -203,9 +203,7 @@ void __write_buffer_config() {
 				}
 			}
 
-			printf("%s:%s => %d, %d, %d\n", type, output, __buffer_config[i].type.data_type, __buffer_config[i].type.group_size, __buffer_config[i].type.output);
-
-			fprintf(f, "%u\t%s%d\t%s\t%s\n", __buffer_config[i].buffer, type, __buffer_config[i].type.group_size, output,__buffer_config[i].target);
+			fprintf(f, "%3u\t\t%s%d\t%s\t%s\n", __buffer_config[i].buffer, type, __buffer_config[i].type.group_size, output,__buffer_config[i].target);
 		}
 		fclose(f);
 		__gldbg_printf("Wrote config to %s\n", BUFFER_CONFIG_FILE);
@@ -259,7 +257,7 @@ static struct __buffer_type_t __parse_buffer_row(const char * value) {
 	return __parse_buffer_config(type, output);
 }
 
-static struct __buffer_type_t __parse_buffer_config(char * type, char * output) {
+static struct __buffer_type_t __parse_buffer_config(const char * type, const char * output) {
 
 	struct __buffer_type_t buffer_type = {
 		.data_type = 0,
@@ -268,10 +266,6 @@ static struct __buffer_type_t __parse_buffer_config(char * type, char * output) 
 	};
 
 	const char * num = NULL;
-
-
-	lowercase(type);
-	lowercase(output);
 
 	for(int i=0; i < __num_buffer_config_types; ++i) {
 		if(strncmp(type, __buffer_config_types[i].str, strlen(__buffer_config_types[i].str)) == 0) {
@@ -322,6 +316,12 @@ void __configure_buffer(struct __gl_buffer_t * buffer) {
 	__buffer_config[__buffer_config_size - 1].buffer = buffer->name;
 	__buffer_config[__buffer_config_size - 1].type = buffer->type;
 	__buffer_config[__buffer_config_size - 1].target = __target_names[__target_index(buffer->target)];
+}
+
+int __parse_interval(const char * str) {
+	if(strcmp(str, "never") == 0) return INTERVAL_NEVER;
+	if(strcmp(str, "keydown") == 0) return INTERVAL_KEYDOWN;
+	return atoi(str);
 }
 
 void lowercase(char * str) {
