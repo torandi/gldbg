@@ -26,14 +26,11 @@ static void __alloc_buffers(GLsizei n, GLuint * buffers);
 /* Returns the bound buffer on given target, or -1 if the target is not handled */
 static GLint __bound_buffer(GLenum target);
 
-/* Returns an index for the target, used for data lookup */
-static int __target_index(GLenum target);
-
 /* 
  * target data, indexed by index given by __target_index. 
  */
 
-static GLenum __target_get_enums[] = {
+static const GLenum __target_get_enums[] = {
 	GL_ARRAY_BUFFER_BINDING,
 	GL_ATOMIC_COUNTER_BUFFER_BINDING,
 	GL_ELEMENT_ARRAY_BUFFER_BINDING,
@@ -42,7 +39,7 @@ static GLenum __target_get_enums[] = {
 	[5 ... 11] = 0,
 };
 
-static const char * __target_names[] = {
+const char * __target_names[] = {
 	"GL_ARRAY_BUFFER",
 	"GL_ATOMIC_COUNTER_BUFFER",
 	"GL_ELEMENT_ARRAY_BUFFER",
@@ -98,6 +95,7 @@ static void __glBindBufferINT(GL_BIND_BUFFER_FUNC real_func, GLenum target, GLui
 			}
 
 			buffer_obj->target = target;
+			__configure_buffer(buffer_obj);
 		}
 	}
 }
@@ -280,7 +278,7 @@ void __log_buffer(struct __gl_buffer_t * buffer) {
 	__gldbg_printf("\n");
 }
 
-static int __target_index(GLenum target) {
+int __target_index(GLenum target) {
 		switch(target) {
 		case GL_ARRAY_BUFFER: return 0;
 		case GL_ATOMIC_COUNTER_BUFFER: return 1;

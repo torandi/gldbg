@@ -15,8 +15,6 @@ void __configure_buffer(struct __gl_buffer_t * buffer);
 
 extern struct __buffer_type_t __default_buffer_type;
 
-struct __buffer_type_t __parse_buffer_type(const char * value);
-
 void lowercase(char * str);
 
 #endif

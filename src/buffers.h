@@ -39,6 +39,10 @@ void __log_buffer(struct __gl_buffer_t * buffer);
 
 void __free_buffers();
 
+/* Returns an index for the target, used for data lookup */
+int __target_index(GLenum target);
+extern const char * __target_names[];
+
 EXPORT void __glGenBuffers(GLsizei n, GLuint * buffers);
 EXPORT void __glGenBuffersARB(GLsizei n, GLuint * buffers);
 

@@ -15,6 +15,7 @@ struct __buffer_config_t {
 };
 
 static struct __buffer_config_t * __buffer_config = NULL;
+static unsigned int __buffer_config_size = 0;
 
 struct __buffer_type_t __default_buffer_type;
 
@@ -31,6 +32,37 @@ static char * __find_entry(const char * key);
 static void __load_defaults();
 
 static void __write_config();
+
+static struct __buffer_type_t __parse_buffer_config(char * type, char * output);
+static struct __buffer_type_t __parse_buffer_row(const char * value);
+
+/* Data for parsing/writing buffer config */
+struct __buffer_config_type_t {
+	const char * str;
+	enum __data_type_t type;
+};
+
+static const struct __buffer_config_type_t __buffer_config_types[] = {
+	{ "float", FLOAT },
+	{ "int", INT },
+};
+
+static const size_t __num_buffer_config_types = sizeof(__buffer_config_types) / sizeof(struct __buffer_config_type_t);
+
+struct __buffer_config_output_type_t {
+	const char * str;
+	enum __buffer_output_t type;
+};
+
+static const struct __buffer_config_output_type_t __buffer_config_output_types[] = {
+	{ "none", 0 },
+	{ "print", OUT_PRINT },
+	{ "log", OUT_LOG },
+	{ "both", OUT_BOTH },
+};
+
+static const size_t __num_buffer_config_output_types = sizeof(__buffer_config_output_types) / sizeof(struct __buffer_config_output_type_t);
+
 
 void __load_config() {
 	__load_defaults();
@@ -92,7 +124,33 @@ void __load_config() {
 		__write_config();
 	}
 
-	__default_buffer_type = __parse_buffer_type(__find_entry("buffers:defaults"));
+	f = fopen(BUFFER_CONFIG_FILE, "r");
+	if( f != NULL) {
+		struct __buffer_config_t config[256];
+		char type[16];
+		char output[16];
+		unsigned int index = 0;
+		while(!feof(f)) {
+			struct __buffer_config_t * cfg = config + index;
+			if(fscanf(f," %u %s %s %*s ", &cfg->buffer, type, output) == 3) {
+				cfg->type = __parse_buffer_config(type, output);
+				if(++index == 256) {
+					__buffer_config = realloc(__buffer_config, sizeof(struct __buffer_config_t) * (__buffer_config_size + index));
+					memcpy(__buffer_config + __buffer_config_size, config, sizeof(struct __buffer_config_t) * index);
+					__buffer_config_size += index;
+					index = 0;
+				}
+			}
+		}
+
+		if(index > 0) {
+			__buffer_config = realloc(__buffer_config, sizeof(struct __buffer_config_t) * (__buffer_config_size + index));
+			memcpy(__buffer_config + __buffer_config_size, config, sizeof(struct __buffer_config_t) * index);
+			__buffer_config_size += index;
+		}
+	}
+
+	__default_buffer_type = __parse_buffer_row(__find_entry("buffers:defaults"));
 }
 
 static void __write_config() {
@@ -126,7 +184,34 @@ static void __write_config() {
 }
 
 void __write_buffer_config() {
+	FILE * f = fopen(BUFFER_CONFIG_FILE, "w");
+	if(f != NULL ) {
+		for(int i=0;i < __buffer_config_size; ++i) {
+			const char * type, *output;
 
+			for(size_t j=0; j<__num_buffer_config_types; ++j) {
+				if(__buffer_config[i].type.data_type == __buffer_config_types[j].type) {
+					type = __buffer_config_types[j].str;
+					break;
+				}
+			}
+
+			for(size_t j=0; j<__num_buffer_config_output_types; ++j) {
+				if(__buffer_config[i].type.output == __buffer_config_output_types[j].type) {
+					output = __buffer_config_output_types[j].str;
+					break;
+				}
+			}
+
+			printf("%s:%s => %d, %d, %d\n", type, output, __buffer_config[i].type.data_type, __buffer_config[i].type.group_size, __buffer_config[i].type.output);
+
+			fprintf(f, "%u\t%s%d\t%s\t%s\n", __buffer_config[i].buffer, type, __buffer_config[i].type.group_size, output,__buffer_config[i].target);
+		}
+		fclose(f);
+		__gldbg_printf("Wrote config to %s\n", BUFFER_CONFIG_FILE);
+	} else {
+		__gldbg_printf("Failed to open %s for writing\n", BUFFER_CONFIG_FILE);
+	}
 }
 
 void __free_config() {
@@ -166,19 +251,15 @@ static char * __find_entry(const char * key) {
 	return NULL;
 }
 
-struct __buffer_type_t __parse_buffer_type(const char * value) {
+static struct __buffer_type_t __parse_buffer_row(const char * value) {
 	char type[16];
 	char output[16];
+	sscanf(value, "%s %s", type, output);
 
-	struct type_t {
-		const char * str;
-		enum __data_type_t type;
-	};
+	return __parse_buffer_config(type, output);
+}
 
-	struct type_t types[] = {
-		{ "float", FLOAT },
-		{ "int", INT },
-	};
+static struct __buffer_type_t __parse_buffer_config(char * type, char * output) {
 
 	struct __buffer_type_t buffer_type = {
 		.data_type = 0,
@@ -188,15 +269,14 @@ struct __buffer_type_t __parse_buffer_type(const char * value) {
 
 	const char * num = NULL;
 
-	sscanf(value, "%s %s", type, output);
 
 	lowercase(type);
 	lowercase(output);
 
-	for(int i=0; i < sizeof(types) / sizeof(struct type_t); ++i) {
-		if(strncmp(type, types[i].str, strlen(types[i].str)) == 0) {
-			buffer_type.data_type = types[i].type;
-			num = type + strlen(types[i].str);
+	for(int i=0; i < __num_buffer_config_types; ++i) {
+		if(strncmp(type, __buffer_config_types[i].str, strlen(__buffer_config_types[i].str)) == 0) {
+			buffer_type.data_type = __buffer_config_types[i].type;
+			num = type + strlen(__buffer_config_types[i].str);
 			break;
 		}
 	}
@@ -213,21 +293,10 @@ struct __buffer_type_t __parse_buffer_type(const char * value) {
 		}
 	}
 
-	struct output_type_t {
-		const char * str;
-		enum __buffer_output_t type;
-	};
 
-	struct output_type_t output_types[] = {
-		{ "none", 0 },
-		{ "print", OUT_PRINT },
-		{ "log", OUT_LOG },
-		{ "both", OUT_BOTH },
-	};
-
-	for(int i=0; i<sizeof(output_types) / sizeof(struct output_type_t); ++i) {
-		if(strcmp(output, output_types[i].str) == 0) {
-			buffer_type.output = output_types[i].type;
+	for(int i=0; i<__num_buffer_config_output_types; ++i) {
+		if(strcmp(output, __buffer_config_output_types[i].str) == 0) {
+			buffer_type.output = __buffer_config_output_types[i].type;
 			break;
 		}
 	}
@@ -238,6 +307,21 @@ struct __buffer_type_t __parse_buffer_type(const char * value) {
 	}
 
 	return buffer_type;
+}
+
+void __configure_buffer(struct __gl_buffer_t * buffer) {
+	for(int i=0; i<__buffer_config_size; ++i) {
+		if(buffer->name == __buffer_config[i].buffer) {
+			__buffer_config[i].target = __target_names[__target_index(buffer->target)];
+			buffer->type = __buffer_config[i].type;
+			return;
+		}
+	}
+	__buffer_config = realloc(__buffer_config, sizeof(struct __buffer_config_t) * (++__buffer_config_size));
+
+	__buffer_config[__buffer_config_size - 1].buffer = buffer->name;
+	__buffer_config[__buffer_config_size - 1].type = buffer->type;
+	__buffer_config[__buffer_config_size - 1].target = __target_names[__target_index(buffer->target)];
 }
 
 void lowercase(char * str) {
