@@ -3,12 +3,14 @@
 
 #include <string.h>
 
+GL_BIND_BUFFER_FUNC __real_glBindBuffer = NULL;
+
 /* Functions here must be in the order defined by the enum in glinject.h */
 struct __gl_func_t __functions[] = {
-	{ "glGenBuffers", (void*)__glGenBuffers , (void*)__glGenBuffersARB, NULL, NULL },
-	{ "glDeleteBuffers", (void*)__glDeleteBuffers , (void*)__glDeleteBuffersARB, NULL, NULL },
-	{ "glBindBuffer", (void*)__glBindBuffer , (void*)__glBindBufferARB, NULL, NULL },
-	{ "glBufferData", (void*)__glBufferData , (void*)__glBufferDataARB, NULL, NULL },
+	{ "glGenBuffers", (void*)__glGenBuffers , (void*)__glGenBuffersARB, NULL, },
+	{ "glDeleteBuffers", (void*)__glDeleteBuffers , (void*)__glDeleteBuffersARB, NULL, },
+	{ "glBindBuffer", (void*)__glBindBuffer , (void*)__glBindBufferARB, NULL, NULL, (void*)&__real_glBindBuffer },
+	{ "glBufferData", (void*)__glBufferData , (void*)__glBufferDataARB, NULL,},
 };
 
 
@@ -23,6 +25,9 @@ static void * __glXGetProcAddressINT (GL_X_GET_PROC_ADDRESS_FUNC real_func, cons
 				if(__functions[i].real_func_arb == NULL) {
 					__gldbg_printf("Hooking into %s\n", (const char*) proc_name);
 					__functions[i].real_func_arb = real_func(procName);
+					if(__functions[i].internal_func != NULL && *(__functions[i].internal_func) == NULL) {
+						*__functions[i].internal_func = __functions[i].real_func_arb;
+					}
 					return __functions[i].func;
 				}
 			}
@@ -34,6 +39,9 @@ static void * __glXGetProcAddressINT (GL_X_GET_PROC_ADDRESS_FUNC real_func, cons
 				if(__functions[i].real_func == NULL) {
 					__gldbg_printf("Hooking into %s\n", (const char*) proc_name);
 					__functions[i].real_func = real_func(procName);
+					if(__functions[i].internal_func != NULL && *(__functions[i].internal_func) == NULL) {
+						*__functions[i].internal_func = __functions[i].real_func;
+					}
 					return __functions[i].func;
 				}
 			}

@@ -2,8 +2,8 @@ ACLOCAL_AMFLAGS = -I m4
 AM_DEFAULT_SOURCE_EXT = .cpp
 
 
-AM_LDFLAGS = ${GLEW_LIBS} ${GL_LIBS}
-AM_CFLAGS = -std=gnu99 -Wall -Wvla -Wconversion -I${top_srcdir}/src -fvisibility=hidden ${GL_CFLAGS} ${GLEW_CFLAGS}
+AM_CFLAGS = -std=gnu99 -Wall -Wvla -Wconversion -I${top_srcdir}/src -fvisibility=hidden ${GL_CFLAGS} ${GLEW_CFLAGS} ${SDL_CFLAGS}
+AM_LDFLAGS = ${GLEW_LIBS} ${GL_LIBS} ${SDL_LIBS}
 
 lib_LTLIBRARIES = libgldbg.la
 
@@ -11,6 +11,7 @@ libgldbg_la_SOURCES = \
 	src/main.c \
 	src/glinject.c \
 	src/buffers.c \
+	src/config.c \
 	src/gldbg.c
 
 .PHONY: convenience-link clean-convenience-link

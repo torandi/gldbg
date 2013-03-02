@@ -15,6 +15,7 @@ LT_INIT
 
 AX_CHECK_GL
 AX_GLEW
+AM_PATH_SDL
 
 dnl Setup paths
 AC_DEFINE_UNQUOTED([srcdir], ["${srcdir}"], [srcdir])

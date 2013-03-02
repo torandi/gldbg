@@ -5,6 +5,7 @@
 
 #include "buffers.h"
 #include "glinject.h"
+#include "config.h"
 
 
 
@@ -112,7 +113,6 @@ static void __glBufferDataINT(GL_BUFFER_DATA_FUNC real_func, GLenum target, GLsi
 	}
 
 	if(buffer_index == -1) {
-		__gldbg_printf("Derp teh herp, not nadling %s\n", __target_names[__target_index(target)]);
 		return; /* We don't handle this buffer type */
 	}
 
@@ -127,11 +127,21 @@ static void __glBufferDataINT(GL_BUFFER_DATA_FUNC real_func, GLenum target, GLsi
 	glGetBufferParameteriv(target, GL_BUFFER_SIZE, &(buffer->size));
 	__gldbg_printf("Size for buffer %u (%s) set to %d\n", buffer_index, __target_names[__target_index(target)], buffer->size);
 
+	/* Allocate data buffer */
+	if(buffer->data != NULL) free(buffer->data);
+	if(buffer->size > 0) {
+		buffer->data = malloc((size_t)buffer->size);
+	} else {
+		buffer->data = NULL;
+	}
 }
 
 void __free_buffers() {
 	for(unsigned int i = 0; i < __num_buffers; ++i) {
-		if(__buffers[i] != NULL) free(__buffers[i]);
+		if(__buffers[i] != NULL) {
+			if(__buffers[i]->data != NULL) free(__buffers[i]->data);
+			free(__buffers[i]);
+		}
 	}
 	free(__buffers);
 	__buffers = NULL;
@@ -164,8 +174,9 @@ static void __alloc_buffers(GLsizei n, GLuint * buffers) {
 			.name = index,
 			.target = 0,
 			.size = 0,
-			.type = { GLDBG_BUFFER_FLOAT, 1 },
+			.type = __default_buffer_type,
 			.valid = 1,
+			.data = NULL,
 		};
 
 		__buffers[index] = (struct __gl_buffer_t*) malloc(sizeof(struct __gl_buffer_t));
@@ -196,6 +207,77 @@ static GLint __bound_buffer(GLenum target) {
 	glGetIntegerv(get_enum, &bound_buffer);
 
 	return bound_buffer;
+}
+
+int __read_buffer(struct __gl_buffer_t * buffer) {
+	if(buffer->valid == 0) {
+		__gldbg_printf("Internal error: Trying to read a deleted buffer (%u)\n", buffer->name);
+		return 0;
+	}
+
+	if(buffer->target == 0) {
+		__gldbg_printf("Internal error: Trying to read a buffer (%u) with no target set\n", buffer->name);
+		return 0;
+	}
+
+	int index = __target_index(buffer->target);
+
+	GLint current = __bound_buffer(buffer->target);
+	if(current == -1) {
+		__gldbg_printf("Internal error: Trying to read a buffer (%u) bound to unhandled target %s\n", buffer->name, __target_names[index]);
+		return 0;
+	}
+
+	if(buffer->data == NULL) {
+		__gldbg_printf("Internal error: Trying to read a buffer (%u - %s) of size 0\n", buffer->name, __target_names[index]);
+		return 0;
+	}
+
+	if(current != buffer->name) __real_glBindBuffer(buffer->target, buffer->name);
+
+	glGetBufferSubData(buffer->target, 0, buffer->size, buffer->data);
+
+	if( current != buffer->name) __real_glBindBuffer(buffer->target, (GLuint) current); /* Restore original bound buffer */
+
+	return 1;
+}
+
+void __log_buffer(struct __gl_buffer_t * buffer) {
+	__gldbg_log("%u (%s):\n", buffer->name, __target_names[__target_index(buffer->target)]);
+	int count = 0;
+	GLint size = 0; /* Size of the data type used to interprent the buffer */
+	switch(buffer->type.data_type) {
+		case FLOAT: 
+			size = sizeof(float);
+			break;
+		case INT: 
+			size = sizeof(int);
+			break;
+	}
+
+	int values = buffer->size / size;
+
+	if(buffer->size % size != 0) {
+		__gldbg_log("Warning! Data type size does not evenly divide buffer size!\n");
+	}
+
+
+	for(int i=0;i < values; ++i) {
+		switch(buffer->type.data_type) {
+			case FLOAT:
+				__gldbg_log("%f\t",  ((float*)buffer->data)[i]);
+				break;
+			case INT:
+				__gldbg_log("%d\t",  ((int*)buffer->data)[i]);
+				break;
+		}
+		++count;
+		if(count % buffer->type.group_size == 0) __gldbg_printf("\n");
+	}
+
+	if(count % buffer->type.group_size != 0) __gldbg_printf("\n");
+
+	__gldbg_printf("\n");
 }
 
 static int __target_index(GLenum target) {

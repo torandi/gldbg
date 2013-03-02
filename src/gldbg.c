@@ -1,4 +1,5 @@
 #include "gldbg.h"
+#include "config.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -41,8 +42,15 @@ void __gldbg_init() {
 			return;
 	}
 
+	__load_config();
 
 	initialized = 1;
+}
+
+void __gldbg_finish() {
+	__write_config();
+	__free_buffers();
+	__free_config();
 }
 
 void __gldbg_printf(const char* fmt, ...) {
