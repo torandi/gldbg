@@ -16,10 +16,22 @@ The debugger most likely only works on linux.
 
 Dependencies
 -----------
-These are all problably already used for your opengl application
+
+* Automake, autoconf and libtool
+
+These are all probably already used for your opengl application
 * OpenGL
 * GLEW
 * SDL
+
+Build
+=======
+* autoreconf -i
+* mkdir build
+* cd build
+* ../configure
+* make
+* make install
 
 Usage
 ===========
