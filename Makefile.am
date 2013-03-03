@@ -6,14 +6,23 @@ AM_CFLAGS = -std=gnu99 -Wall -Wvla -Wconversion -I${top_srcdir}/src -fvisibility
 AM_LDFLAGS = ${GLEW_LIBS} ${GL_LIBS} ${SDL_LIBS}
 
 lib_LTLIBRARIES = libgldbg.la
+bin_SCRIPTS = gldbg
+CLEANFILES = $(bin_SCRIPTS)
+EXTRA_DIST = src/gldbg.in
 
 libgldbg_la_SOURCES = \
 	src/main.c \
-	src/glinject.c \
-	src/buffers.c \
-	src/config.c \
-	src/keyboard.c \
-	src/gldbg.c
+	src/glinject.c src/glinject.h \
+	src/buffers.c src/buffers.h \
+	src/config.csrc/config.h \
+	src/keyboard.csrc/keyboard.h \
+	src/gldbg.c src/gldbg.h
+
+ do_subst = sed -e 's,[@]libdir[@],$(libdir),g'
+
+gldbg: src/gldbg.in
+	$(SED) -e 's,[@]libdir[@],$(libdir),g' < ${top_srcdir}/src/gldbg.in > gldbg
+	chmod +x gldbg
 
 .PHONY: convenience-link clean-convenience-link
 

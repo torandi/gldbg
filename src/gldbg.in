@@ -1,0 +1,5 @@
+#!/bin/sh
+
+LIBGLDBG_PATH=@libdir@
+
+LD_PRELOAD="$LIBGLDBG_PATH/libgldbg.so" $@

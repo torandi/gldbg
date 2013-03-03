@@ -14,9 +14,16 @@ The debugger is only intended for modern opengl (opengl 3 or newer) and is not t
 
 The debugger most likely only works on linux.
 
+Dependencies
+-----------
+These are all problably already used for your opengl application
+* OpenGL
+* GLEW
+* SDL
+
 Usage
 ===========
-To use the debugger, start your GL-application with libgldbg preloaded (see (or use) run.sh).
+To use the debugger, start your GL-application with the gldbg script.
 To be able to run gdb or valgrind you must export LD_PRELOAD before starting your program with gdb or valgrind
 
 The content of each buffer can be written to stderr ("print") or a gldbg.log ("log") on given conditions.
