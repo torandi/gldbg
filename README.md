@@ -16,7 +16,8 @@ The debugger most likely only works on linux.
 
 Usage
 ===========
-To use the debugger, start your GL-application with libgldbg preloaded (see run.sh)
+To use the debugger, start your GL-application with libgldbg preloaded (see (or use) run.sh).
+To be able to run gdb or valgrind you must export LD_PRELOAD before starting your program with gdb or valgrind
 
 The content of each buffer can be written to stderr ("print") or a gldbg.log ("log") on given conditions.
 These condition can be either every n:th frame, or on a given keycombination. 
