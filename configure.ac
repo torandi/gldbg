@@ -17,6 +17,12 @@ AX_CHECK_GL
 AX_GLEW
 AM_PATH_SDL
 
+AC_ARG_ENABLE([debug], [AS_HELP_STRING([--enable-debug], [Turn on debug output @<:@default=disabled@:>@])], [], [enable_debug="no"])
+AS_IF([test "x$enable_debug" == "xyes"],
+			[AC_DEFINE([DEBUG], [1], [Define to 1 to turn on debug output])
+			enable_debug=no
+])
+
 dnl Setup paths
 AC_DEFINE_UNQUOTED([srcdir], ["${srcdir}"], [srcdir])
 

@@ -23,7 +23,9 @@ static void * __glXGetProcAddressINT (GL_X_GET_PROC_ADDRESS_FUNC real_func, cons
 		for(int i=0; i< sizeof(__functions) / sizeof(struct __gl_func_t); ++i) {
 			if(strncmp(__functions[i].name, proc_name, strlen(proc_name) - 3) == 0) {
 				if(__functions[i].real_func_arb == NULL) {
+#if DEBUG
 					__gldbg_printf("Hooking into %s\n", (const char*) proc_name);
+#endif
 					__functions[i].real_func_arb = real_func(procName);
 					if(__functions[i].internal_func != NULL && *(__functions[i].internal_func) == NULL) {
 						*__functions[i].internal_func = __functions[i].real_func_arb;
@@ -37,7 +39,9 @@ static void * __glXGetProcAddressINT (GL_X_GET_PROC_ADDRESS_FUNC real_func, cons
 		for(int i=0; i< sizeof(__functions) / sizeof(struct __gl_func_t); ++i) {
 			if(strcmp(__functions[i].name, proc_name) == 0) {
 				if(__functions[i].real_func == NULL) {
+#if DEBUG
 					__gldbg_printf("Hooking into %s\n", (const char*) proc_name);
+#endif
 					__functions[i].real_func = real_func(procName);
 					if(__functions[i].internal_func != NULL && *(__functions[i].internal_func) == NULL) {
 						*__functions[i].internal_func = __functions[i].real_func;

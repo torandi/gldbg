@@ -177,7 +177,6 @@ static void __write_config() {
 			}
 		}
 		fclose(f);
-		__gldbg_printf("Wrote config to %s\n", CONFIG_FILE);
 	} else {
 		__gldbg_printf("Failed to open %s for writing\n", CONFIG_FILE);
 	}
@@ -206,7 +205,6 @@ void __write_buffer_config() {
 			fprintf(f, "%3u\t\t%s%d\t%s\t%s\n", __buffer_config[i].buffer, type, __buffer_config[i].type.group_size, output,__buffer_config[i].target);
 		}
 		fclose(f);
-		__gldbg_printf("Wrote config to %s\n", BUFFER_CONFIG_FILE);
 	} else {
 		__gldbg_printf("Failed to open %s for writing\n", BUFFER_CONFIG_FILE);
 	}

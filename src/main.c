@@ -23,8 +23,6 @@ EXPORT void SDL_GL_SwapBuffers() {
 EXPORT void SDL_Quit() {
 		__gldbg_init();
 
-		__gldbg_printf("Quit()\n");
-
 		__gldbg_finish();
 
 		__real_SDL_Quit();
@@ -41,8 +39,8 @@ static void __debug() {
 
 	if(__print_interval > INTERVAL_KEYDOWN || __log_interval > INTERVAL_KEYDOWN) {
 		int target =  
-			( __print_interval > INTERVAL_KEYDOWN && cycle % __print_interval == 0 ? OUT_PRINT : 0)
-			| ( __log_interval > INTERVAL_KEYDOWN && cycle % __log_interval == 0 ? OUT_LOG : 0);
+			( __print_interval > INTERVAL_KEYDOWN && ( __print_interval == 0 || cycle % __print_interval == 0 )? OUT_PRINT : 0)
+			| ( __log_interval > INTERVAL_KEYDOWN && ( __log_interval  == 0 || cycle % __log_interval == 0 ) ? OUT_LOG : 0);
 		if(target > 0) __log_buffers(target);
 	}
 	++cycle;
